@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Validation\Validator;
+use Illuminate\Contracts\Validation\Validator;
 
 
 class RolesRequest extends FormRequest
@@ -15,7 +15,7 @@ class RolesRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -32,9 +32,18 @@ class RolesRequest extends FormRequest
     }
     public function message(){
         return [
-            'name.required' => 'the value is required.',
+            'error data incorrect',
         ];
     }
+
+    public function failedValidation(Validator $validator){
+        throw new HttpResponseException(response()->json([
+            'status' => false,
+            'error' => $validator->errors(),
+            'message' => 'error, data incorrect'
+        ], 404));
+    }
+
 
     
 }

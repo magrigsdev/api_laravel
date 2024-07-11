@@ -17,8 +17,7 @@ return new class extends Migration
             //contrainte
             $table->foreign('role_id')->references('id')->on('roles')
             ->onDelete('cascade');
-
-            
+    
         });
     }
 
