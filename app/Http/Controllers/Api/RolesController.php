@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Roles;
+use App\Utilities\MyController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\RolesRequest;
@@ -10,30 +10,19 @@ use App\Http\Controllers\Controller;
 
 class RolesController extends Controller
 {
+   
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
-        $roles = Roles::all();
-        $size = Roles::count();
-
-        if (empty($size)) {
-            return response()->json([
-                'status' => false,
-                'message' => 'no data found'
-            ], 404);
-        } else {
-            return response()->json([
-                'status' => true,
-                'message' => 'success',
-                'data' => $roles,
-                'number' => $size
-            ], 200);
-
+        $data = MyController::List('roles');
+        if($data['status'] ){
+            return response()->json($data, 200);
         }
-
+        else{
+            return response()->json($data, 404);
+        }
     }
 
     /**
