@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 
+use App\Utilities\MyMessage;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Contracts\Validation\Validator;
@@ -25,14 +26,15 @@ class RolesRequest extends FormRequest
      */
     public function rules(): array
     {
+        
         return [
             //
-            'name' => 'required|string|max:255'
+            'name' => 'required|string|max:255',
         ];
     }
     public function message(){
         return [
-            'error data incorrect',
+            MyMessage::data_incorrect(),
         ];
     }
 
@@ -40,7 +42,7 @@ class RolesRequest extends FormRequest
         throw new HttpResponseException(response()->json([
             'status' => false,
             'error' => $validator->errors(),
-            'message' => 'error, data incorrect'
+            'message' =>$this->message()
         ], 404));
     }
 
