@@ -20,7 +20,7 @@ class MyController
 
             return [
                 'status' => MyMessage::status(),
-                'message' => MyMessage::data_no_exist(),
+                'message' => MyMessage::data_empty(),
             ];
 
         } else {

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Utilities\MyController;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 
 class PersonnelController extends Controller
 {
@@ -13,7 +15,47 @@ class PersonnelController extends Controller
     public function index()
     {
         //
+        //$personnels = [];
+        $data = MyController::List('personnels');
+        // if ($key == 'role_id') {
+        //     $value = DB::table('roles')->where('id', intval($value))->value('name');
+        // }
+        if ($data['status']) {
+            $list = $data['data'];
+            
+            $jsonList = $list->jsonSerialize();
+            
+            foreach ($jsonList as $item) {
+                # code...
+                if(isset($item->role_id)){
+                    $item->role_id = DB::table('roles')
+                    ->where('id', intval($item->role_id))
+                    ->value('name');
+                }
+            }
+            
+            //dd($list);
+
+            //print_r($jsonList);
+            return response()->json($jsonList, 200);
+        } else {
+            return response()->json($data, 404);
+        }
     }
+
+    /**
+     * id	1
+* lastname	"john"
+*firstname	"doe"
+*email	"doe@gmail.com"
+*telephone	"68754367654"
+*sexe	"M"
+*addresse	"76 rue de la victoire 78990 meaureux"
+*password	"doejohn"
+*hiring_date	"2024-07-10"
+*role_id	2
+*photo
+     */
 
     /**
      * Store a newly created resource in storage.
