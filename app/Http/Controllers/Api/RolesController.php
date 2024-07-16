@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Utilities\MyController;
 use App\Utilities\MyMessage;
 use Illuminate\Http\Request;
+use App\Utilities\MyController;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\RolesRequest;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Schema;
 
 class RolesController extends Controller
 {
@@ -17,29 +18,57 @@ class RolesController extends Controller
      */
     public function index()
     {
-        $data = MyController::List('roles');
-        if($data['status'] ){
+        $list = DB::table('roles')->get();
+        $size = DB::table('roles')->count();
+
+        //$data = array();
+        if (empty($size)) {
+
+            $data =  [
+                'status' => MyMessage::status(),
+                'message' => MyMessage::data_empty(),
+            ];
+            return response()->json($data, 404);
+
+        } 
+        else {
+            $data =  [
+                'status' => MyMessage::status(true),
+                'data' => $list,
+                'number' => $size,
+            ];
             return response()->json($data, 200);
         }
-        else{
-            return response()->json($data, 404);
-        }
+        
     }
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(RolesRequest $request)
+    //public function store(Request $request)
     {
+
+        if (!empty($request)) {
+            $storage = [
+                'name' => $request->name,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+            DB::table('roles')->insert($storage);
+            return [
+                'status' => MyMessage::status(true),
+                'message' => MyMessage::data_saved()
+            ];
+        } 
+        else {
+            return [
+                'status' => false,
+                'message' => MyMessage::data_already_exist($request->name)
+            ];
+        }
         
-        $storage = [
-            'name' => $request->name,
-            'created_at' => now()->format('d-m-Y H:i:s'),
-            'updated_at' => now()->format('d-m-Y H:i:s'),
-        ];
-
-        $store = MyController::store($request, 'roles',['name'=>'name'], $storage);
-
+           
     }
 
     /**
@@ -49,12 +78,31 @@ class RolesController extends Controller
     {
         //
 
-        $data = MyController::show('roles', $id);
-        if($data['status']){
-            return response()->json($data, 200);
-        }
-        else{
-            return response()->json($data, 404);
+        // $data = MyController::show('roles', $id);
+        // if($data['status']){
+        //     return response()->json($data, 200);
+        // }
+        // else{
+        //     return response()->json($data, 404);
+        // }
+
+        //$name = DB::table($table)->where($column['name'], $request->name)->exists();
+        $column_exist = Schema::hasColumn('roles', 'name');
+
+        //$name ? $is_exist = true : $is_exist = false;
+        dd($column_exist);
+        //now()->format('d-m-Y H:i:s'),
+        if ($is_exist) {
+            DB::table($table)->insert($storage);
+            return [
+                'status' => MyMessage::status(true),
+                'message' => MyMessage::data_saved()
+            ];
+        } else {
+            return [
+                'status' => false,
+                'message' => MyMessage::data_already_exist($request->name)
+            ];
         }
     }
 

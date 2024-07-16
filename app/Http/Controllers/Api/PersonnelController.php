@@ -43,19 +43,6 @@ class PersonnelController extends Controller
         }
     }
 
-    /**
-     * id	1
-* lastname	"john"
-*firstname	"doe"
-*email	"doe@gmail.com"
-*telephone	"68754367654"
-*sexe	"M"
-*addresse	"76 rue de la victoire 78990 meaureux"
-*password	"doejohn"
-*hiring_date	"2024-07-10"
-*role_id	2
-*photo
-     */
 
     /**
      * Store a newly created resource in storage.

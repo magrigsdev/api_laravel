@@ -32,15 +32,18 @@ class MyController
         }
     }
 
-    public static function store(mixed $request, string $table, $column = [], array $storage)
+    public static function store(mixed $request, string $table, $column = [], array $storage):mixed
     {
         $is_exist = false;
-        $name = DB::table($table)->where($column['name'], $request->name)->exists();
+        //dd($column['name']);
+        //$name = DB::table($table)->where($column['name'], $request->name)->exists();
+        $column_exist = Schema::hasColumn('roles', 'name');
 
-        $name ? $is_exist = true : $is_exist = false;
+        //$name ? $is_exist = true : $is_exist = false;
+        dd($column_exist);
         //now()->format('d-m-Y H:i:s'),
         if ($is_exist) {
-            DB::table($table)->insert($column);
+            DB::table($table)->insert($storage);
             return [
                 'status' => MyMessage::status(true),
                 'message' => MyMessage::data_saved()
