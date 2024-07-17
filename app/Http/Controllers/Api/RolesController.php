@@ -48,14 +48,23 @@ class RolesController extends Controller
     public function store(RolesRequest $request)
     //public function store(Request $request)
     {
+        DB::table('roles')->insert([
+            'name' => $request->name,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        return [
+            'status' => MyMessage::status(true),
+            'message' => MyMessage::data_saved()
+        ];
 
         if (!empty($request)) {
-            $storage = [
+            
+            DB::table('roles')->insert([
                 'name' => $request->name,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ];
-            DB::table('roles')->insert($storage);
+            ]);
             return [
                 'status' => MyMessage::status(true),
                 'message' => MyMessage::data_saved()
@@ -78,14 +87,7 @@ class RolesController extends Controller
     {
         //
 
-        // $data = MyController::show('roles', $id);
-        // if($data['status']){
-        //     return response()->json($data, 200);
-        // }
-        // else{
-        //     return response()->json($data, 404);
-        // }
-
+   
         //$name = DB::table($table)->where($column['name'], $request->name)->exists();
         $column_exist = Schema::hasColumn('roles', 'name');
 
@@ -112,16 +114,26 @@ class RolesController extends Controller
     public function update(RolesRequest $request, string $id)
     {
         //
-        $data =  ['name' => strval($request->name),
-                'updated_at' => now()->format('Y-m-d H:i:s')
-        ];
-        
-        $update = MyController::update($request, 'roles', $id, $data );
+        $is_exist = false;
+        $temp_id = DB::table('roles')->where('id', $id)->exists();
+        $temp_id ? $is_exist = true : $is_exist = false;
 
-        if($update['status']){
-            return response()->json($update, 200);
-        }else{
-            return response()->json($update, 404);
+        if ($is_exist) {
+            DB::table('roles')
+                ->where('id', $id)
+                ->update([
+                    $request->name,
+                    'updated_at' => now()
+                ]);
+
+            return response()->json([
+                'status' => MyMessage::status(true),
+                'message' => MyMessage::data_info("updated")], 200);
+        } else {
+            return response()->json([
+                'status' => MyMessage::status(),
+                'message' => MyMessage::data_no_found()
+            ], 404);
         }
     }
 
@@ -130,13 +142,23 @@ class RolesController extends Controller
      */
     public function destroy(string $id)
     {
-        //
-        $delete = MyController::destroy('roles', $id);
-        if($delete['status']){
-            return response()->json($delete, 200);
-        }
-        else{
-            return response()->json($delete, 404);
+    
+
+        $is_exist = DB::table('roles')->where('id', $id)->exists();
+
+        if ($is_exist) {
+            DB::table('roles')
+                ->where('id', $id)
+                ->delete();
+            return response()->json([
+                'status' => MyMessage::status(true),
+                'message' => MyMessage::data_info("deleted")], 200);
+            
+        } else {
+            return response()->json([
+                'status' => MyMessage::status(),
+                'message' => MyMessage::data_no_found()
+            ], 404);
         }
         
     }
