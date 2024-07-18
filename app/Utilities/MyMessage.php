@@ -10,7 +10,7 @@ class MyMessage {
     {
         return $etat ;
     }
-    public static function data_no_exist(string $message = null): mixed
+    public static function data_no_exist(string $message = "data"): mixed
     {
          return $message . " not exist";
     }
@@ -23,20 +23,33 @@ class MyMessage {
     {
         return $message . " error data incorrect";
     }
-    public static function data_no_found(string $message = null): mixed
+    public static function data_no_found(string $message = "data"): mixed
     {
-        return $message . " no data found";
+        return $message . " no found";
     }
     public static function data_saved(string $message = null): mixed
     {
-        return $message . " data saved";
+        return $message . " is saved";
     }
-    public static function data_already_exist(string $datum = null): mixed
+    public static function data_already_exist(string $datum = "data" ): mixed
     {
         return $datum . "  already exist";
     }
-    public static function data_info(string $info): mixed
+    public static function data_info(string $info, $name = null): mixed
     {
         return "  data is " . $info;
+    }
+
+    public static function datum_exist(string $info, $data = null): mixed
+    {
+        return $info ."  already exist ";
+    }
+    public static function data_update($data = "data"): mixed
+    {
+        return $data . " is updated";
+    }
+    public static function data_delete($data = "data"): mixed
+    {
+        return $data . " is deleted";
     }
 }

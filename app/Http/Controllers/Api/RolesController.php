@@ -48,35 +48,26 @@ class RolesController extends Controller
     public function store(RolesRequest $request)
     //public function store(Request $request)
     {
-        DB::table('roles')->insert([
-            'name' => $request->name,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-        return [
-            'status' => MyMessage::status(true),
-            'message' => MyMessage::data_saved()
-        ];
-
-        if (!empty($request)) {
-            
+        $is_exist = DB::table('roles')->where('name', $request->name)->exists();
+        if($is_exist){
+            return response()->json([
+                'status' => MyMessage::status(),
+                'message' => MyMessage::datum_exist($request->name)
+            ], 403);
+        }
+        else {
             DB::table('roles')->insert([
                 'name' => $request->name,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            return [
+
+            return response()->json([
                 'status' => MyMessage::status(true),
-                'message' => MyMessage::data_saved()
-            ];
-        } 
-        else {
-            return [
-                'status' => false,
-                'message' => MyMessage::data_already_exist($request->name)
-            ];
-        }
-        
+                'message' => MyMessage::data_saved($request->name)
+            ]);
+
+        }     
            
     }
 
@@ -86,24 +77,19 @@ class RolesController extends Controller
     public function show(string $id)
     {
         //
-
-   
-        //$name = DB::table($table)->where($column['name'], $request->name)->exists();
-        $column_exist = Schema::hasColumn('roles', 'name');
-
-        //$name ? $is_exist = true : $is_exist = false;
-        dd($column_exist);
-        //now()->format('d-m-Y H:i:s'),
+        $is_exist = DB::table('roles')->where('id', $id)->exists();
+        
         if ($is_exist) {
-            DB::table($table)->insert($storage);
-            return [
+            $role = DB::table('roles')->where('id', $id)->first();
+            return response()->json([
                 'status' => MyMessage::status(true),
-                'message' => MyMessage::data_saved()
-            ];
+                'data' => $role
+            ], 200);
+            
         } else {
             return [
                 'status' => false,
-                'message' => MyMessage::data_already_exist($request->name)
+                'message' => MyMessage::data_no_found()
             ];
         }
     }
@@ -114,21 +100,19 @@ class RolesController extends Controller
     public function update(RolesRequest $request, string $id)
     {
         //
-        $is_exist = false;
-        $temp_id = DB::table('roles')->where('id', $id)->exists();
-        $temp_id ? $is_exist = true : $is_exist = false;
-
+        $is_exist = DB::table('roles')->where('id', $id)->exists();
+        
         if ($is_exist) {
             DB::table('roles')
                 ->where('id', $id)
                 ->update([
-                    $request->name,
+                    'name' => $request->name,
                     'updated_at' => now()
                 ]);
 
             return response()->json([
                 'status' => MyMessage::status(true),
-                'message' => MyMessage::data_info("updated")], 200);
+                'message' => MyMessage::data_update($request->name)], 200);
         } else {
             return response()->json([
                 'status' => MyMessage::status(),
@@ -145,14 +129,15 @@ class RolesController extends Controller
     
 
         $is_exist = DB::table('roles')->where('id', $id)->exists();
-
+        $name = DB::table('roles')->where('id', $id)->value('name');
+        
         if ($is_exist) {
             DB::table('roles')
                 ->where('id', $id)
                 ->delete();
             return response()->json([
                 'status' => MyMessage::status(true),
-                'message' => MyMessage::data_info("deleted")], 200);
+                'message' => MyMessage::data_delete($name)], 200);
             
         } else {
             return response()->json([
