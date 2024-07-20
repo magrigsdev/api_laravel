@@ -4,11 +4,10 @@ namespace App\Http\Requests;
 
 use App\Utilities\MyMessage;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
-
-class RolesRequest extends FormRequest
+class PersonnelsRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,26 +24,32 @@ class RolesRequest extends FormRequest
      */
     public function rules(): array
     {
-        
         return [
             //
             'name' => 'required|string|max:255',
+            'lastname' => 'required|string|max:255',
+            'firstname' => 'required|string|max:255',
+            'email' => 'required|string|max:255|unique',
+            'telephone' => 'required|string|max:255',
+            'sexe' => 'required|string|max:50',
+            'addresse' => 'required|text',
+            'password' => 'required|text',
+            'hiring_date' => 'required|date',
+            'role_id' => 'required|string|max:255',
         ];
     }
-    public function message(){
+    public function message()
+    {
         return [
             MyMessage::data_incorrect(),
         ];
     }
-
-    public function failedValidation(Validator $validator){
+    public function failedValidation(Validator $validator)
+    {
         throw new HttpResponseException(response()->json([
             'status' => false,
             'error' => $validator->errors(),
-            'message' =>$this->message()
+            'message' => $this->message()
         ], 404));
     }
-
-
-    
 }

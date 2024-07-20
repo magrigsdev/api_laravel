@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Utilities\MyMessage;
 use Illuminate\Http\Request;
-use App\Utilities\MyController;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\RolesRequest;
 use App\Http\Controllers\Controller;
@@ -59,7 +58,7 @@ class RolesController extends Controller
             DB::table('roles')->insert([
                 'name' => $request->name,
                 'created_at' => now(),
-                'updated_at' => now(),
+                'updated_at' => null,
             ]);
 
             return response()->json([
@@ -129,9 +128,9 @@ class RolesController extends Controller
     
 
         $is_exist = DB::table('roles')->where('id', $id)->exists();
-        $name = DB::table('roles')->where('id', $id)->value('name');
         
         if ($is_exist) {
+            $name = DB::table('roles')->where('id', $id)->value('name');
             DB::table('roles')
                 ->where('id', $id)
                 ->delete();
