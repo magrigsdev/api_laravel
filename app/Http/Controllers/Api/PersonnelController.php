@@ -11,7 +11,8 @@ use App\Http\Controllers\Controller;
 
 class PersonnelController extends Controller
 {
-    protected $table = 'personnels';
+    private $table = 'personnels';
+
     /**
      * Display a listing of the resource.
      */
@@ -20,6 +21,16 @@ class PersonnelController extends Controller
         $list = DB::table($this->table)->get();
         $size = DB::table($this->table)->count();
 
+        $list = $list->jsonSerialize();
+
+        foreach ($list as  $personnel) {
+            # code...
+            if(isset($personnel->role_id)){
+                $personnel->role_id = DB::table('roles')
+                    ->where('id', intval($personnel->role_id))
+                    ->value('name');
+            }
+        }
         //$data = array();
         if (empty($size)) {
 
@@ -40,14 +51,16 @@ class PersonnelController extends Controller
 
     }
 
-
     /**
      * Store a newly created resource in storage.
      */
     public function store(PersonnelsRequest $request)
     //public function store(Request $request)
     {
-        $is_exist = DB::table($this->table)->where('email', $request->name)->exists();
+        $is_exist = DB::table($this->table)
+        ->where('email', $request->email)
+        ->exists();       
+       // dd($is_exist);
         if ($is_exist) {
             return response()->json([
                 'status' => MyMessage::status(),
@@ -55,7 +68,8 @@ class PersonnelController extends Controller
             ], 403);
         } 
         else {
-            DB::table($this->table)->insert([
+            DB::table($this->table)
+                    ->insert([
                 'firstname' => $request->firstname,
                 'lastname' => $request->lastname,
                 'email' => $request->email,
@@ -66,8 +80,8 @@ class PersonnelController extends Controller
                 'hiring_date' => $request->hiring_date,
                 'role_id' => $request->role_id,
                 'photo' => $request->photo,
-                'created_at' => now(),
-                'updated_at' => null,   
+                // 'created_at' => now(),
+                // 'updated_at' => null,   
             ]);
 
             return response()->json([
@@ -89,10 +103,14 @@ class PersonnelController extends Controller
         $is_exist = DB::table($this->table)->where('id', $id)->exists();
 
         if ($is_exist) {
-            $personnel = DB::table($this->table)->where('id', $id)->first();
+            $list = DB::table($this->table)->where('id', $id)->first();
+            $list->role_id = DB::table('roles')
+                ->where('id', intval($list->role_id))
+                ->value('name');
+            
             return response()->json([
                 'status' => MyMessage::status(true),
-                'data' => $personnel
+                'data' => $list
             ], 200);
 
         } else {
@@ -106,33 +124,54 @@ class PersonnelController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(PersonnelsRequest $request, string $id)
+    public function update(Request $request, string $id)
     {
         //
-        $is_exist = DB::table($this->table)->where('id', $id)->exists();
+        $is_exist = DB::table($this->table)
+            ->where('id', $id)->exists();
 
+        $update = [];
+        $update_request = [
+            'firstname' => $request->firstname,
+            'lastname' => $request->lastname,
+            'email' => $request->email,
+            'telephone' => $request->telephone,
+            'sexe' => $request->sexe,
+            'addresse' => $request->addresse,
+            'password' => $request->password,
+            'hiring_date' => $request->hiring_date,
+            'role_id' => $request->role_id,
+            'photo' => $request->photo
+        ];
+
+        foreach ($update_request as $key =>  $value) {
+            # code...
+            if(!is_null($value)){
+                $update[$key] = $value;
+            }
+           
+        }
+        
         if ($is_exist) {
-            DB::table($this->table)
-                ->where('id', $id)
-                ->update([
-                        'firstname' => $request->firstname,
-                        'lastname' => $request->lastname,
-                        'email' => $request->email,
-                        'telephone' => $request->telephone,
-                        'sexe' => $request->sexe,
-                        'addresse' => $request->addresse,
-                        'password' => $request->password,
-                        'hiring_date' => $request->hiring_date,
-                        'role_id' => $request->role_id,
-                        'photo' => $request->photo,
-                        
-                        'updated_at' => now()
-                    ]);
 
-            return response()->json([
-                'status' => MyMessage::status(true),
-                'message' => MyMessage::data_update($request->name)
-            ], 200);
+            if(count($update) > 0 ){
+
+                DB::table($this->table)
+                    ->where('id', $id)
+                    ->update($update);
+
+                return response()->json([
+                    'status' => MyMessage::status(true),
+                    'message' => MyMessage::data_update($request->name)
+                ], 200);
+            }
+            else {
+                return response()->json([
+                    'status' => MyMessage::status(),
+                    'message' => MyMessage::value_empty()
+                ], 403);
+            }
+            
         } else {
             return response()->json([
                 'status' => MyMessage::status(),
@@ -167,6 +206,102 @@ class PersonnelController extends Controller
                 'status' => MyMessage::status(),
                 'message' => MyMessage::data_no_found()
             ], 404);
+        }
+    }
+
+    public function before_date(string $date)
+    {
+        //
+        $date = strval($date);
+        $before_date = DB::table($this->table)
+        ->where('hiring_date','<', $date)->get();
+        $size = DB::table($this->table)
+            ->where('hiring_date', '<', $date)->count();
+
+        //dd($before_date);
+        if (!empty($before_date)) {
+            return response()->json([
+                'status' => MyMessage::status(true),
+                'data' => $before_date,
+                'number'=>$size
+            ], 200);
+
+        } else {
+            return response()->json([
+                'status' => MyMessage::status(),
+                'message' => MyMessage::data_no_found()
+            ], 404);
+        }
+    }
+    public function after_date(string $date)
+    {
+        //
+        $date = strval($date);
+        $after_date = DB::table($this->table)
+            ->where('hiring_date', '>', $date)->get();
+        $size = DB::table($this->table)
+            ->where('hiring_date', '>', $date)->count();
+
+
+        if (!empty($after_date)) {
+
+            return response()->json([
+                'status' => MyMessage::status(true),
+                'data' => $after_date,
+                'number'=>$size
+            ], 200);
+
+        } else {
+            return response()->json([
+                'status' => MyMessage::status(),
+                'message' => MyMessage::data_no_found()
+            ], 404);
+        }
+    }
+    public function between(string $date_debut, string $date_fin)
+    {
+        //
+        
+        $after_date = DB::table($this->table)
+            ->whereBetween('hiring_date', [$date_debut, $date_fin])->get();
+        $size = DB::table($this->table)
+            ->whereBetween('hiring_date', [$date_debut, $date_fin])->count();
+        //dd($pp);
+        if (count($after_date) > 0) {
+
+            return response()->json([
+                'status' => MyMessage::status(true),
+                'data' => $after_date,
+                'number'=>$size
+            ], 200);
+
+        } else {
+            return response()->json([
+                'status' => MyMessage::status(),
+                'message' => MyMessage::data_no_found()
+            ], 404);
+        }
+    }
+    public function genre(string $sexe)
+    {
+        //
+        $is_exist = DB::table($this->table)->where('sexe', $sexe)->exists();
+
+        if ($is_exist) {
+            $list = DB::table($this->table)->where('sexe', $sexe)->get();
+            $size = DB::table($this->table)->where('sexe', $sexe)->count();
+
+            return response()->json([
+                'status' => MyMessage::status(true),
+                'data' => $list,
+                'number'=>$size
+            ], 200);
+
+        } else {
+            return [
+                'status' => false,
+                'message' => MyMessage::data_no_found()
+            ];
         }
     }
 }

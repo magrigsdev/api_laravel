@@ -146,5 +146,26 @@ class RolesController extends Controller
         }
         
     }
+
+    public function number(string $role)
+    {
+        //s
+        $is_exist = DB::table('roles')->where('name', $role)->exists();
+
+
+        // if ($is_exist) {
+        //     $role = DB::table('roles')->where('id', $id)->first();
+        //     return response()->json([
+        //         'status' => MyMessage::status(true),
+        //         'data' => $role
+        //     ], 200);
+
+        // } else {
+        //     return [
+        //         'status' => false,
+        //         'message' => MyMessage::data_no_found()
+        //     ];
+        // }
+    }
     
 }

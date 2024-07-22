@@ -26,16 +26,16 @@ class PersonnelsRequest extends FormRequest
     {
         return [
             //
-            'name' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
             'firstname' => 'required|string|max:255',
-            'email' => 'required|string|max:255|unique',
+            'email' => 'required|string|max:255',
             'telephone' => 'required|string|max:255',
             'sexe' => 'required|string|max:50',
-            'addresse' => 'required|text',
-            'password' => 'required|text',
+            'addresse' => 'required|string',
+            'password' => 'required|string',
             'hiring_date' => 'required|date',
             'role_id' => 'required|string|max:255',
+            'photo' => 'required|string',
         ];
     }
     public function message()
