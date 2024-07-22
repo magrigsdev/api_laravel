@@ -6,7 +6,6 @@ use App\Http\Requests\PersonnelsRequest;
 use App\Utilities\MyMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Http\Requests\RolesRequest;
 use App\Http\Controllers\Controller;
 
 class PersonnelController extends Controller
@@ -208,13 +207,18 @@ class PersonnelController extends Controller
             ], 404);
         }
     }
-
     public function before_date(string $date)
     {
         //
         $date = strval($date);
         $before_date = DB::table($this->table)
         ->where('hiring_date','<', $date)->get();
+        foreach ($before_date as $key => $value) {
+            # code...
+            $value->role_id = DB::table('roles')
+                ->where('id', intval($value->role_id))
+                ->value('name');
+        }
         $size = DB::table($this->table)
             ->where('hiring_date', '<', $date)->count();
 
@@ -239,6 +243,13 @@ class PersonnelController extends Controller
         $date = strval($date);
         $after_date = DB::table($this->table)
             ->where('hiring_date', '>', $date)->get();
+
+        foreach ($after_date as $key => $value) {
+            # code...
+            $value->role_id = DB::table('roles')
+                ->where('id', intval($value->role_id))
+                ->value('name');
+        }
         $size = DB::table($this->table)
             ->where('hiring_date', '>', $date)->count();
 
@@ -262,16 +273,23 @@ class PersonnelController extends Controller
     {
         //
         
-        $after_date = DB::table($this->table)
+        $between = DB::table($this->table)
             ->whereBetween('hiring_date', [$date_debut, $date_fin])->get();
+
+        foreach ($between as $key => $value) {
+            # code...
+            $value->role_id = DB::table('roles')
+                ->where('id', intval($value->role_id))
+                ->value('name');
+        }
         $size = DB::table($this->table)
             ->whereBetween('hiring_date', [$date_debut, $date_fin])->count();
         //dd($pp);
-        if (count($after_date) > 0) {
+        if (count($between) > 0) {
 
             return response()->json([
                 'status' => MyMessage::status(true),
-                'data' => $after_date,
+                'data' => $between,
                 'number'=>$size
             ], 200);
 
@@ -290,6 +308,12 @@ class PersonnelController extends Controller
         if ($is_exist) {
             $list = DB::table($this->table)->where('sexe', $sexe)->get();
             $size = DB::table($this->table)->where('sexe', $sexe)->count();
+            foreach ($list as $key => $value) {
+                # code...
+                $value->role_id = DB::table('roles')
+                    ->where('id', intval($value->role_id))
+                    ->value('name');
+            }
 
             return response()->json([
                 'status' => MyMessage::status(true),
@@ -303,5 +327,47 @@ class PersonnelController extends Controller
                 'message' => MyMessage::data_no_found()
             ];
         }
+    }
+    public function role(string $role)
+    {
+        //
+        $is_name =  DB::table('roles')->where('name', $role)->exists();
+        
+        if($is_name){
+            $table = DB::table('roles')->where('name', $role)->get();
+            foreach ($table as $key => $value) {
+                # code...
+                $id = $value->id;
+            }
+
+            $is_id = DB::table($this->table)->where('role_id', $id)->exists();
+
+            if ($is_id) {
+                $list = DB::table($this->table)->where('role_id', $id)->get();
+                $size = DB::table($this->table)->where('role_id', $id)->count();
+                foreach ($list as $key => $value) {
+                    # code...
+                    $value->role_id = DB::table('roles')
+                        ->where('id', intval($value->role_id))
+                        ->value('name');
+                }
+
+                return response()->json([
+                    'status' => MyMessage::status(true),
+                    'data' => $list,
+                    'number' => $size
+                ], 200);
+
+            } else {
+                return [
+                    'status' => false,
+                    'message' => MyMessage::data_no_found()
+                ];
+            }
+            
+        }
+        
+
+       
     }
 }
